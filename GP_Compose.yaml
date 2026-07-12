@@ -1,0 +1,173 @@
+services:
+
+  gp_database:
+    image: mysql:8.0
+    container_name: gp_database
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - Database_Data:/var/lib/mysql
+      - ./GP_Database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    networks:
+      - gp_network
+
+  gp_python_server_1:
+    build:
+      context: ./GP_Python_Server_1
+      dockerfile: Docker
+    container_name: gp_python_server_1
+
+    ports:
+      - "11001:11001"
+
+    depends_on:
+      - gp_database
+
+    networks:
+      - gp_network
+
+  gp_python_server_2:
+    build:
+      context: ./GP_Python_Server_2
+      dockerfile: Docker
+    container_name: gp_python_server_2
+
+    ports:
+      - "11002:11002"
+
+    depends_on:
+      - gp_database
+
+    networks:
+      - gp_network
+
+  gp_python_server_3:
+    build:
+      context: ./GP_Python_Server_3
+      dockerfile: Docker
+    container_name: gp_python_server_3
+
+    ports:
+      - "11003:11003"
+
+    depends_on:
+      - gp_database
+
+    networks:
+      - gp_network
+
+  gp_c_server_1:
+    build:
+      context: ./GP_C_Server_1
+      dockerfile: Docker
+    container_name: gp_c_server_1
+
+    ports:
+      - "12001:12001"
+
+    networks:
+      - gp_network
+
+  gp_c_server_2:
+    build:
+      context: ./GP_C_Server_2
+      dockerfile: Docker
+    container_name: gp_c_server_2
+
+    ports:
+      - "12002:12002"
+
+    networks:
+      - gp_network
+
+  gp_c_server_3:
+    build:
+      context: ./GP_C_Server_3
+      dockerfile: Docker
+    container_name: gp_c_server_3
+
+    ports:
+      - "12003:12003"
+
+    networks:
+      - gp_network
+
+  gp_client_python_1:
+    build:
+      context: ./GP_Client
+      dockerfile: Dockerfile
+    container_name: gp_client_python_1
+    command: ["python", "client.py", "gp_python_server_1", "11001", "view"]
+    depends_on:
+      - gp_python_server_1
+    networks:
+      - gp_network
+
+  gp_client_python_2:
+    build:
+      context: ./GP_Client
+      dockerfile: Dockerfile
+    container_name: gp_client_python_2
+    command: ["python", "client.py", "gp_python_server_2", "11002", "view"]
+    depends_on:
+      - gp_python_server_2
+    networks:
+      - gp_network
+
+  gp_client_python_3:
+    build:
+      context: ./GP_Client
+      dockerfile: Dockerfile
+    container_name: gp_client_python_3
+    command: ["python", "client.py", "gp_python_server_3", "11003", "view"]
+    depends_on:
+      - gp_python_server_3
+    networks:
+      - gp_network
+
+  gp_client_c_1:
+    build:
+      context: ./GP_Client
+      dockerfile: Dockerfile
+    container_name: gp_client_c_1
+    command: ["python", "client.py", "gp_c_server_1", "12001", "view"]
+    depends_on:
+      - gp_c_server_1
+    networks:
+      - gp_network
+
+  gp_client_c_2:
+    build:
+      context: ./GP_Client
+      dockerfile: Dockerfile
+    container_name: gp_client_c_2
+    command: ["python", "client.py", "gp_c_server_2", "12002", "view"]
+    depends_on:
+      - gp_c_server_2
+    networks:
+      - gp_network
+
+  gp_client_c_3:
+    build:
+      context: ./GP_Client
+      dockerfile: Dockerfile
+    container_name: gp_client_c_3
+    command: ["python", "client.py", "gp_c_server_3", "12003", "view"]
+    depends_on:
+      - gp_c_server_3
+    networks:
+      - gp_network
+
+volumes:
+  Database_Data:
+
+networks:
+  gp_network:
+    driver: bridge
